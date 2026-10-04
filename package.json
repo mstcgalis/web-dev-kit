@@ -1,0 +1,12 @@
+{
+  "name": "web-checks",
+  "version": "0.1.0",
+  "description": "Shared test tooling for web projects: axe-core crawl over a served site.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "bin": { "web-checks": "bin/web-checks.js" },
+  "files": ["bin"],
+  "dependencies": { "axe-core": "^4.13.0" },
+  "peerDependencies": { "playwright": "^1.63.0" },
+  "devDependencies": { "playwright": "^1.63.0" }
+}
