@@ -12,6 +12,7 @@ test('variants: static floor, shipped, then each knob; --off lists override', ()
 
 test('summarise: median and spread', () => {
 	expect(summarise([30, 10, 20])).toEqual({ median: 20, min: 10, max: 30 });
+	expect(summarise([10, 20]).median).toBe(15);
 	expect(summarise([5])).toEqual({ median: 5, min: 5, max: 5 });
 });
 
