@@ -20,6 +20,9 @@ any one agent. It decomposes into:
 This repo (`web-checks`) is renamed **`web-kit`**. GitHub redirects the old URL, so sonda's
 current `#v0.1.0` pin keeps resolving until it migrates.
 
+Everything not covered here (modules 2–5, deferred check features, open questions) is tracked
+in [`docs/roadmap.md`](../../roadmap.md).
+
 ## Decisions (from brainstorming)
 
 - **Delivery:** the kit is a **Nix flake input**, pinned by `flake.lock`. Pinned packages over
