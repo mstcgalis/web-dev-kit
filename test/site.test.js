@@ -1,0 +1,52 @@
+import { afterAll, expect, test } from 'bun:test';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { loadConfig } from '../lib/config.js';
+import { crawl, startSite } from '../lib/site.js';
+import { PROJECT } from './run.js';
+
+const pages = {
+	'/': '<a href="a">a</a> <a href="/b#x">b</a> <a href="/b?y=1">b again</a> <a href="/style.css">css</a> <a href="https://example.com/">away</a>',
+	'/a': '<a href="/c">c</a>',
+	'/b': '<a href="/d">d</a>',
+};
+const server = Bun.serve({
+	port: 0,
+	fetch: (req) => {
+		const body = pages[new URL(req.url).pathname];
+		return new Response(body ?? 'nope', { status: body ? 200 : 404, headers: { 'content-type': 'text/html' } });
+	},
+});
+afterAll(() => server.stop(true));
+const origin = `http://localhost:${server.port}`;
+
+test('crawl resolves relative links, drops fragments, queries, files and other origins', async () => {
+	expect(await crawl(origin, { start: ['/'], skip: '', limit: 80 })).toEqual(['/', '/a', '/b', '/c', '/d']);
+});
+
+test('crawl honours skip and limit', async () => {
+	expect(await crawl(origin, { start: ['/'], skip: '^/a', limit: 80 })).toEqual(['/', '/b', '/d']);
+	expect(await crawl(origin, { start: ['/'], skip: '', limit: 2 })).toEqual(['/', '/a']);
+});
+
+test('loadConfig fills defaults under the project file', async () => {
+	const c = await loadConfig(PROJECT);
+	expect(c.pages).toEqual({ start: ['/', '/does-not-exist'], skip: '', limit: 80 });
+	expect(c.viewports).toEqual([[390, 844], [1280, 800]]);
+	expect((await loadConfig(tmpdir())).engines.local).toEqual(['chromium']);
+});
+
+test('startSite fails fast and names the recipe when serve-at dies', async () => {
+	const dir = mkdtempSync(join(tmpdir(), 'kit-noserve-'));
+	writeFileSync(join(dir, 'justfile'), 'serve-at PORT:\n    exit 1\n');
+	const cwd = process.cwd();
+	process.chdir(dir);
+	try {
+		const t = Date.now();
+		await expect(startSite()).rejects.toThrow(/just serve-at \d+/);
+		expect(Date.now() - t).toBeLessThan(11_000);
+	} finally {
+		process.chdir(cwd);
+	}
+}, 15_000);

@@ -1,0 +1,3 @@
+# The fixture project's half of the kit contract.
+serve-at PORT:
+    bun ../../bin/kit.js serve-dir site {{PORT}}
