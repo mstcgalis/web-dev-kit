@@ -9,8 +9,8 @@ test('parseEngine: playwright names and exe specs', () => {
 });
 
 test('parseEngine expands $VAR paths and names a missing one', () => {
-	process.env.KIT_TEST_FF = '/opt/ff/firefox';
-	expect(parseEngine('exe:firefox:$KIT_TEST_FF').path).toBe('/opt/ff/firefox');
-	delete process.env.KIT_TEST_FF;
-	expect(() => parseEngine('exe:firefox:$KIT_TEST_FF')).toThrow('$KIT_TEST_FF is not set');
+	process.env.WDK_TEST_FF = '/opt/ff/firefox';
+	expect(parseEngine('exe:firefox:$WDK_TEST_FF').path).toBe('/opt/ff/firefox');
+	delete process.env.WDK_TEST_FF;
+	expect(() => parseEngine('exe:firefox:$WDK_TEST_FF')).toThrow('$WDK_TEST_FF is not set');
 });

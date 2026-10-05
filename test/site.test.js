@@ -38,7 +38,7 @@ test('loadConfig fills defaults under the project file', async () => {
 });
 
 test('startSite fails fast and names the recipe when serve-at dies', async () => {
-	const dir = mkdtempSync(join(tmpdir(), 'kit-noserve-'));
+	const dir = mkdtempSync(join(tmpdir(), 'wdk-noserve-'));
 	writeFileSync(join(dir, 'justfile'), 'serve-at PORT:\n    exit 1\n');
 	const cwd = process.cwd();
 	process.chdir(dir);

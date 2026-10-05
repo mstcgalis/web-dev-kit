@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test';
 import { summarise, variants } from '../lib/cmd/perf.js';
-import { kit } from './run.js';
+import { wdk } from './run.js';
 
 const knobs = { spin: { css: 'x' }, ticker: { script: 'ticker' } };
 
@@ -17,7 +17,7 @@ test('summarise: median and spread', () => {
 });
 
 test.skipIf(process.platform === 'darwin')('perf refuses to run off macOS', () => {
-	const r = kit(['perf']);
+	const r = wdk(['perf']);
 	expect(r.err).toContain('macOS only');
 	expect(r.code).toBe(2);
 });

@@ -10,5 +10,5 @@ jobs:
       - uses: DeterminateSystems/determinate-nix-action@v3
       - uses: DeterminateSystems/magic-nix-cache-action@v13
       - run: nix flake check
-      - run: nix build .#kit
+      - run: nix build .#wdk
       - run: nix develop -c sh -c 'bun install --frozen-lockfile && bun test'

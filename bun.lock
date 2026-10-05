@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "web-checks",
+      "name": "web-dev-kit",
       "dependencies": {
         "axe-core": "^4.13.0",
         "doiuse": "^6.0.6",

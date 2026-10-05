@@ -38,7 +38,7 @@ test('rewriteHtml: beacon first in head, knob css, script removed, origin rewrit
 	const html = `<html><head><title>x</title></head><body><a href="http://o/a">a</a><script src="/ticker.js"></script></body></html>`;
 	const out = rewriteHtml(html, { knobs, off: ['spin', 'ticker'], origin: 'http://o', self: 'http://p' });
 	expect(out.indexOf(BEACON)).toBe(out.indexOf('<head>') + '<head>'.length);
-	expect(out).toContain('<style data-kit>.spin{animation:none}</style></head>');
+	expect(out).toContain('<style data-wdk>.spin{animation:none}</style></head>');
 	expect(out).not.toContain('ticker.js');
 	expect(out).toContain('href="http://p/a"');
 	expect(() => rewriteHtml('<head></head>', { knobs, off: ['ticker'] })).toThrow('no <script> for ticker.js');
@@ -72,25 +72,25 @@ test('proxy: strips method-override headers', async () => {
 });
 
 test('proxy: rewrites HTML, passes binaries through byte-identical', async () => {
-	const html = await (await get('/?kit-off=spin')).text();
+	const html = await (await get('/?wdk-off=spin')).text();
 	expect(html).toContain(BEACON);
 	expect(html).toContain('.spin{animation:none}');
 	expect(html).toContain(`href="${proxy.url}/a"`);
 	expect(new Uint8Array(await (await get('/img.png')).arrayBuffer())).toEqual(PNG);
 	expect((await (await get('/headless')).text()).startsWith(BEACON)).toBe(true);
-	expect((await get('/?kit-off=nope')).status).toBe(400);
+	expect((await get('/?wdk-off=nope')).status).toBe(400);
 	expect(proxy.responses.some((r) => r.path === '/img.png' && r.status === 200)).toBe(true);
 });
 
-test('proxy: kit-freeze stops animations; kit-mouse adds the synthetic pointer', async () => {
-	const html = await (await get('/?kit-freeze&kit-mouse')).text();
+test('proxy: wdk-freeze stops animations; wdk-mouse adds the synthetic pointer', async () => {
+	const html = await (await get('/?wdk-freeze&wdk-mouse')).text();
 	expect(html).toContain('animation:none!important');
 	expect(html).toContain("new MouseEvent('mousemove'");
 });
 
 test('proxy: beacon POSTs are recorded', async () => {
 	proxy.errors.length = 0;
-	expect((await get('/__kit/beacon', { method: 'POST', body: JSON.stringify({ path: '/x', type: 'error', msg: 'boom' }) })).status).toBe(204);
+	expect((await get('/__wdk/beacon', { method: 'POST', body: JSON.stringify({ path: '/x', type: 'error', msg: 'boom' }) })).status).toBe(204);
 	expect(proxy.errors).toEqual([{ path: '/x', type: 'error', msg: 'boom' }]);
 });
 
@@ -148,19 +148,19 @@ test('proxy: rejects PUT and DELETE', async () => {
 test('proxy: beacon body size limit and type validation', async () => {
 	proxy.errors.length = 0;
 	// Valid beacon
-	expect((await get('/__kit/beacon', { method: 'POST', body: JSON.stringify({ path: '/x', type: 'error', msg: 'ok' }) })).status).toBe(204);
+	expect((await get('/__wdk/beacon', { method: 'POST', body: JSON.stringify({ path: '/x', type: 'error', msg: 'ok' }) })).status).toBe(204);
 	expect(proxy.errors.length).toBe(1);
 	// Invalid type
 	proxy.errors.length = 0;
-	expect((await get('/__kit/beacon', { method: 'POST', body: JSON.stringify({ path: '/x', type: 'invalid', msg: 'fail' }) })).status).toBe(204);
+	expect((await get('/__wdk/beacon', { method: 'POST', body: JSON.stringify({ path: '/x', type: 'invalid', msg: 'fail' }) })).status).toBe(204);
 	expect(proxy.errors.length).toBe(0);
 	// null body is not recorded
 	proxy.errors.length = 0;
-	expect((await get('/__kit/beacon', { method: 'POST', body: JSON.stringify({ path: '/x', type: null, msg: 'null' }) })).status).toBe(204);
+	expect((await get('/__wdk/beacon', { method: 'POST', body: JSON.stringify({ path: '/x', type: null, msg: 'null' }) })).status).toBe(204);
 	expect(proxy.errors.length).toBe(0);
 	// Body over 4 KB is ignored
 	proxy.errors.length = 0;
 	const bigBody = JSON.stringify({ path: '/x', type: 'error', msg: 'x'.repeat(5000) });
-	expect((await get('/__kit/beacon', { method: 'POST', body: bigBody })).status).toBe(204);
+	expect((await get('/__wdk/beacon', { method: 'POST', body: bigBody })).status).toBe(204);
 	expect(proxy.errors.length).toBe(0);
 });

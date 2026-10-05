@@ -1,5 +1,5 @@
 {
-  description = "web-kit: shared checks and stack dev shells for web projects";
+  description = "web-dev-kit: shared checks and stack dev shells for web projects";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
@@ -22,7 +22,7 @@
         # Fixed-output: bun fetches over the network, Nix pins the result by hash.
         # Bump the hash whenever bun.lock changes (build once with lib.fakeHash).
         node-modules = pkgs.stdenvNoCC.mkDerivation {
-          pname = "web-kit-node-modules";
+          pname = "web-dev-kit-node-modules";
           version = "0.2.0";
           inherit src;
           nativeBuildInputs = [ pkgs.bun ];
@@ -37,20 +37,20 @@
           outputHashAlgo = "sha256";
           outputHash = "sha256-1H/Z7HJje3vPxUBj6FZOgCjXQLllhAK3fHKJ+nSxRcM=";
         };
-        kit = pkgs.stdenvNoCC.mkDerivation {
-          pname = "web-kit";
+        wdk = pkgs.stdenvNoCC.mkDerivation {
+          pname = "web-dev-kit";
           version = "0.2.0";
           inherit src;
           nativeBuildInputs = [ pkgs.makeWrapper ];
           dontBuild = true;
           installPhase = ''
-            mkdir -p $out/share/web-kit $out/bin
-            cp -r bin lib package.json $out/share/web-kit/
-            ln -s ${node-modules} $out/share/web-kit/node_modules
-            makeWrapper ${pkgs.bun}/bin/bun $out/bin/kit --add-flags $out/share/web-kit/bin/kit.js
+            mkdir -p $out/share/web-dev-kit $out/bin
+            cp -r bin lib package.json $out/share/web-dev-kit/
+            ln -s ${node-modules} $out/share/web-dev-kit/node_modules
+            makeWrapper ${pkgs.bun}/bin/bun $out/bin/wdk --add-flags $out/share/web-dev-kit/bin/wdk.js
           '';
         };
-        default = kit;
+        default = wdk;
       });
 
       lib.devShell = { pkgs, stack ? "static", packages ? [ ] }:
@@ -62,7 +62,7 @@
             kirby = [ pkgs.php85 pkgs.php85Packages.composer ];
           };
         in pkgs.mkShell {
-          packages = [ self.packages.${system}.kit pkgs.just pkgs.bun ] ++ stacks.${stack} ++ packages;
+          packages = [ self.packages.${system}.wdk pkgs.just pkgs.bun ] ++ stacks.${stack} ++ packages;
           shellHook = pkgs.lib.optionalString pkgs.stdenv.isLinux ''
             export PLAYWRIGHT_BROWSERS_PATH=${nixpkgs-browsers.legacyPackages.${system}.playwright-driver.browsers}
             export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true

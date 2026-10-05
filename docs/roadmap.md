@@ -1,10 +1,10 @@
-# web-kit roadmap: what is not built yet
+# web-dev-kit roadmap: what is not built yet
 
 The end goal is one CLI that takes a website from first prompt to deployed (stack, repo, domain,
 VPS, CI) in minutes. It is built from scripts, not around any one agent. This file tracks every
 piece that is decided or known but **not specced or built**, so nothing lives only in a chat log.
 
-Specced so far: [`2026-10-05-kit-contract-and-checks-design.md`](superpowers/specs/2026-10-05-kit-contract-and-checks-design.md)
+Specced so far: [`2026-10-05-wdk-contract-and-checks-design.md`](superpowers/specs/2026-10-05-wdk-contract-and-checks-design.md)
 (module 0, thin, and module 1).
 
 Build order: **1 → 3 → 4 → 2 (more stacks) → 5.** The CLI comes last: it only orchestrates
@@ -14,21 +14,21 @@ modules that already exist.
 
 - **Shared agent/human rules.** Sonda's `AGENTS.md` mixes generic rules (one concern per commit,
   `just check` before commit, never commit secrets, server-owned state is untouchable, field names
-  frozen) with Kirby specifics. Split it: the generic part ships in the kit and projects point at
+  frozen) with Kirby specifics. Split it: the generic part ships in the wdk and projects point at
   it; the stack part goes with the stack adapter.
 - **`docs/` contracts.** Sonda has content, CSS and server contracts. Which are generic (the server
   contract is, through the vps module) and which are per project.
 - **Branch and release model, written down:** `dev` → staging, `main` → production,
-  fast-forward only, conventional commits, semver tags for the kit itself.
-- **Fast mode** (sonda's `AGENTS.md`) as a kit-level convention or a per-project one.
+  fast-forward only, conventional commits, semver tags for the wdk itself.
+- **Fast mode** (sonda's `AGENTS.md`) as a wdk-level convention or a per-project one.
 
 ## 2. Stack adapters
 
 Specced: `kirby`, `static`. Missing:
 
 - **Build stacks** (Eleventy, Astro, Vite): `build` produces `dist/`, `serve-at` runs
-  `kit serve-dir dist`. dgalis.sk (Eleventy) is the first real case.
-- **`nix flake init -t web-kit#<stack>` templates**: flake, justfile, `kit.config.js`, `.gitignore`,
+  `wdk serve-dir dist`. dgalis.sk (Eleventy) is the first real case.
+- **`nix flake init -t web-dev-kit#<stack>` templates**: flake, justfile, `wdk.config.js`, `.gitignore`,
   `AGENTS.md`. Owned by the CLI spec, but each stack needs one.
 - **Each stack declares its deploy kind** (see 3).
 - Open: does a stack adapter also pin its linters (Pint/PHPStan for Kirby, Prettier/ESLint for JS)?
@@ -63,20 +63,20 @@ Missing:
 
 Missing (this spec only moves sonda's test job to `nix develop -c just check`):
 
-- **Reusable workflows in the kit** (`.github/workflows/*.yml` with `workflow_call`): test,
+- **Reusable workflows in the wdk** (`.github/workflows/*.yml` with `workflow_call`): test,
   deploy-staging (push to `dev`), deploy-production (push to `main`, after tests pass). Projects
   keep three thin caller files.
 - **Nix caching in CI** (magic-nix-cache or a Cachix cache) so a cold Nix shell does not dominate
   CI time.
 - **Deploy credentials:** which secret the project CI holds to dispatch to vps, scoped how.
-- **Kit releases:** tag → each project bumps `inputs.kit`. Whether a bot opens those PRs, like the
+- **wdk releases:** tag → each project bumps `inputs.wdk`. Whether a bot opens those PRs, like the
   vps weekly flake update.
 
 ## 5. Bootstrap CLI
 
 Missing entirely. Its likely steps, each calling an existing module:
 
-1. Pick stack and name → `nix flake init -t web-kit#<stack>`, then `git init`.
+1. Pick stack and name → `nix flake init -t web-dev-kit#<stack>`, then `git init`.
 2. `gh repo create`, then push `main` and `dev`.
 3. Domain → a DNS records PR in vps `tofu/dns`. Registrar purchase is out of scope unless scripted
    later.
@@ -103,7 +103,7 @@ Also open: idempotency, i.e. re-running it on a half-bootstrapped project.
 
 ## Housekeeping
 
-- Rename this GitHub repo `web-checks` → `web-kit` (the redirect keeps sonda's `#v0.1.0` pin
+- Rename this GitHub repo `web-checks` → `web-dev-kit` (the redirect keeps sonda's `#v0.1.0` pin
   working).
 - Sonda's `docs/perf.md` keeps its findings and the measurement traps; the traps move into the
-  kit's README too, because they apply to every project.
+  wdk's README too, because they apply to every project.

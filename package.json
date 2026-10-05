@@ -1,11 +1,11 @@
 {
-  "name": "web-kit",
+  "name": "web-dev-kit",
   "version": "0.2.0",
   "description": "Shared checks, stack shells and delivery scripts for web projects.",
   "license": "AGPL-3.0-only",
   "type": "module",
   "bin": {
-    "kit": "bin/kit.js"
+    "wdk": "bin/wdk.js"
   },
   "files": ["bin", "lib"],
   "dependencies": {

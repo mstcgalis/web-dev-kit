@@ -11,7 +11,7 @@ test('serve-dir blocks path traversal with %2e%2e', async () => {
 	const actualPort = probe.port;
 	probe.stop(true);
 
-	const child = spawn('bun', ['bin/kit.js', 'serve-dir', dir, String(actualPort)], {
+	const child = spawn('bun', ['bin/wdk.js', 'serve-dir', dir, String(actualPort)], {
 		cwd: `${import.meta.dir}/..`,
 		stdio: 'ignore',
 	});
