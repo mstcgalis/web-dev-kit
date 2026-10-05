@@ -4,7 +4,14 @@
   "description": "Shared checks, stack shells and delivery scripts for web projects.",
   "license": "AGPL-3.0-only",
   "type": "module",
-  "bin": { "kit": "bin/kit.js" },
+  "bin": {
+    "kit": "bin/kit.js"
+  },
   "files": ["bin", "lib"],
-  "dependencies": { "axe-core": "^4.13.0", "playwright": "1.63.0" }
+  "dependencies": {
+    "axe-core": "^4.13.0",
+    "doiuse": "^6.0.6",
+    "playwright": "1.63.0",
+    "postcss": "^8"
+  }
 }
