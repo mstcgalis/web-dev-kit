@@ -1,3 +1,3 @@
-.spin { animation: spin 1s linear infinite; }
+.spin { display: inline-block; margin-block-start: 4rem; animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 main:has(.spin) { outline: 1px solid; }
