@@ -4,10 +4,15 @@ import { dirname, join } from 'node:path';
 import { chromium } from 'playwright';
 import { kit, PROJECT } from './run.js';
 
+// Full Chrome for Testing never exits from --screenshot (checked on 153, macOS);
+// Playwright's headless shell, a plain command-line Chromium, does.
+const shellDir = chromium.executablePath().replace(/chromium-(\d+)\/.*/, 'chromium_headless_shell-$1');
+const SHELL = join(shellDir, [...new Bun.Glob('*/chrome-headless-shell').scanSync(shellDir)][0]);
+
 afterAll(() => rmSync(join(PROJECT, '.kit'), { recursive: true, force: true }));
 
 test('shots writes a sheet: pages × (engine × viewport), exe engines included', () => {
-	const r = kit(['shots', '--engines', 'chromium,exe:chrome:$KIT_TEST_CHROME'], { KIT_TEST_CHROME: chromium.executablePath() });
+	const r = kit(['shots', '--engines', 'chromium,exe:chrome:$KIT_TEST_CHROME'], { KIT_TEST_CHROME: SHELL });
 	expect(r.code).toBe(0);
 	const sheet = r.out.match(/sheet: (.+)/)[1].trim();
 	const html = readFileSync(sheet, 'utf8');
