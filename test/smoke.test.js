@@ -1,4 +1,5 @@
 import { expect, test } from 'bun:test';
+import { chromium } from 'playwright';
 import { kit } from './run.js';
 
 test('smoke fails on the runtime error and the missing image, not on the 404 start path', () => {
@@ -23,3 +24,11 @@ test('smoke exits 2 on invalid engine', () => {
 	expect(r.err).toContain('unknown engine');
 	expect(r.code).toBe(2);
 });
+
+test('exe engines report through the beacon and the proxy', () => {
+	const r = kit(['smoke', '--engines', 'exe:chrome:$KIT_TEST_CHROME'], { KIT_TEST_CHROME: chromium.executablePath() });
+	expect(r.out).toMatch(/✗ exe:chrome:\$KIT_TEST_CHROME \/broken — error: .*boom/);
+	expect(r.out).toContain('✗ exe:chrome:$KIT_TEST_CHROME /broken — 404 /missing.png');
+	expect(r.out).not.toContain('/does-not-exist —');
+	expect(r.code).toBe(1);
+}, 120_000);
