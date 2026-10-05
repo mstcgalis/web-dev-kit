@@ -114,7 +114,7 @@ runtime errors.
 | `kit a11y` | unchanged, except pages come from config and the server from `serve-at` | 1 on any violation |
 | `kit compat` | doiuse over the `compat.css` globs against `compat.targets`, minus `compat.allow` feature ids. Prints file:line, feature and failing browsers | 1 on any finding |
 | `kit smoke` | crawl × engines. Playwright engines fail on `pageerror`, `console.error`, same-origin `requestfailed`, any same-origin subresource ≥ 400, and a document ≥ 500 (a document 404 is fine: `/does-not-exist` is a start path on purpose). `exe:` engines visit the page list crawled by the first Playwright engine, through the proxy, wait 3s and read the beacon | 1 on any error |
-| `kit shots` | crawl × engines × viewports, through the proxy with the `motion` knob (or `animations: 'disabled'` in Playwright). Playwright uses full-page `page.screenshot`. `exe:firefox` runs `firefox --headless --no-remote --profile <tmp> --window-size=W,H --screenshot out.png URL`; `exe:chrome` runs `--headless --window-size=W,H --screenshot=out.png URL`. Output is `.kit/shots/<date>-<sha>/index.html`: rows are pages, columns are engine × viewport, plus a list of beacon errors seen | 0 (report only) |
+| `kit shots` | crawl × engines × viewports, through the proxy with the `motion` knob (or `animations: 'disabled'` in Playwright). Playwright uses full-page `page.screenshot`. `exe:firefox` runs `firefox --headless --no-remote --profile <tmp> --window-size=W --screenshot out.png URL` (width only = full page); `exe:chrome` runs `--headless --window-size=W,H --screenshot=out.png URL`. Output is `.kit/shots/<date>-<sha>/index.html`: rows are pages, columns are engine × viewport, plus a list of beacon errors seen | 0 (report only) |
 | `kit perf` | today's `run.js` behaviour: knob variants × engines × idle/mouse, median and range, `--save-baseline`, `--serve` for the LAN. Results go to `.kit/perf/`, the baseline to `perf-baseline.json` (committed) | 0 (report only) |
 
 ### Not built (add when needed)
@@ -137,8 +137,9 @@ runtime errors.
 1. Bun deps into a Nix derivation: `bun2nix` vs a fixed-output `node_modules` hash.
 2. **The Playwright npm version must equal nixpkgs' `playwright-driver` version**, or the Linux
    browsers will not launch. Pin the npm version to whatever the kit's nixpkgs ships.
-3. Whether FF115 `--screenshot` captures the full page. If not, set the window height to the page
-   height measured in the Playwright Firefox run.
+3. ~~Whether FF115 `--screenshot` captures the full page.~~ **Settled 2026-10-05:** `--window-size=W,H`
+   captures only the viewport; `--window-size=W` (width only) captures the full page at width W. Use
+   width only for `exe:firefox`.
 4. Whether the FF115 macOS `.dmg` unpacks in a fixed-output derivation (`undmg`) and runs from the
    store without a writable app bundle.
 
