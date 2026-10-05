@@ -6,8 +6,13 @@ const PNG = new Uint8Array([137, 80, 78, 71, 0, 1, 2, 255]);
 const upstream = Bun.serve({
 	port: 0,
 	fetch(req) {
-		const { pathname } = new URL(req.url);
-		if (pathname === '/headers') return Response.json([...req.headers.keys()]);
+		const { pathname, search } = new URL(req.url);
+		if (pathname === '/headers') {
+			const headerList = [...req.headers.keys()];
+			return Response.json(headerList);
+		}
+		if (pathname === '/search') return Response.json({ search });
+		if (pathname === '/redirect') return new Response(null, { status: 302, headers: { location: `http://localhost:${upstream.port}/a` } });
 		if (pathname === '/img.png') return new Response(PNG, { headers: { 'content-type': 'image/png' } });
 		if (pathname === '/headless') return new Response('<p>no head</p>', { headers: { 'content-type': 'text/html' } });
 		return new Response(`<html><head><title>x</title></head><body><a href="${origin}/a">a</a><script src="/ticker.js?v=1"></script></body></html>`, {
@@ -88,4 +93,66 @@ test('proxy: a dead upstream gives 502 and a proxy error', async () => {
 	expect((await fetch(dead.url + '/')).status).toBe(502);
 	expect(dead.errors[0].type).toBe('proxy');
 	dead.stop();
+});
+
+test('proxy: header allowlist; blocks cookie, x-forwarded-for, x-http-method', async () => {
+	const names = await (await get('/headers', { headers: { 'accept': 'text/html', 'cookie': 'session=123', 'x-forwarded-for': '1.2.3.4', 'x-http-method': 'DELETE', 'authorization': 'Bearer token', 'host': 'example.com' } })).json();
+	expect(names).toContain('accept');
+	// Check that client-sent headers are not forwarded (note: host is auto-added by Bun, so we check for specific forbidden headers)
+	expect(names.some((n) => /cookie|x-forwarded|x-http-method|authorization/i.test(n))).toBe(false);
+});
+
+test('proxy: strips _method query param before forwarding', async () => {
+	const res = await get('/search?_method=DELETE&foo=bar');
+	const { search } = await res.json();
+	expect(search).toContain('foo=bar');
+	expect(search).not.toContain('_method');
+});
+
+test('proxy: rewrites Location header on redirects', async () => {
+	const res = await get('/redirect', { redirect: 'manual' });
+	expect(res.status).toBe(302);
+	expect(res.headers.get('location')).toContain(proxy.url);
+	expect(res.headers.get('location')).not.toContain('localhost:' + upstream.port);
+});
+
+test('blocked: parser-differential with repeated decode, segment split, trim', () => {
+	const rules = ['panel', 'api', '*.php'];
+	// Repeated decode (max 5)
+	expect(blocked('/%2570anel', rules)).toBe(true); // %25 = %, so %2570 = %70 = p
+	// Segment split on ; and \
+	expect(blocked('/panel;x=1', rules)).toBe(true);
+	expect(blocked('/x%5Cpanel', rules)).toBe(true); // %5C = \
+	// Trailing dots and whitespace trimmed (space is %20)
+	expect(blocked('/panel.', rules)).toBe(true);
+	expect(blocked('/panel%20', rules)).toBe(true);
+	// Double-encoded path segment
+	expect(blocked('/x%2fpanel', rules)).toBe(true); // %2f = /
+	// Still allow /panelist
+	expect(blocked('/panelist', rules)).toBe(false);
+});
+
+test('proxy: rejects PUT and DELETE', async () => {
+	expect((await get('/', { method: 'PUT' })).status).toBe(403);
+	expect((await get('/', { method: 'DELETE' })).status).toBe(403);
+});
+
+test('proxy: beacon body size limit and type validation', async () => {
+	proxy.errors.length = 0;
+	// Valid beacon
+	expect((await get('/__kit/beacon', { method: 'POST', body: JSON.stringify({ path: '/x', type: 'error', msg: 'ok' }) })).status).toBe(204);
+	expect(proxy.errors.length).toBe(1);
+	// Invalid type
+	proxy.errors.length = 0;
+	expect((await get('/__kit/beacon', { method: 'POST', body: JSON.stringify({ path: '/x', type: 'invalid', msg: 'fail' }) })).status).toBe(204);
+	expect(proxy.errors.length).toBe(0);
+	// null body is not recorded
+	proxy.errors.length = 0;
+	expect((await get('/__kit/beacon', { method: 'POST', body: JSON.stringify({ path: '/x', type: null, msg: 'null' }) })).status).toBe(204);
+	expect(proxy.errors.length).toBe(0);
+	// Body over 4 KB is ignored
+	proxy.errors.length = 0;
+	const bigBody = JSON.stringify({ path: '/x', type: 'error', msg: 'x'.repeat(5000) });
+	expect((await get('/__kit/beacon', { method: 'POST', body: bigBody })).status).toBe(204);
+	expect(proxy.errors.length).toBe(0);
 });
