@@ -51,6 +51,28 @@
           '';
         };
         default = wdk;
+      } // pkgs.lib.optionalAttrs pkgs.stdenv.isDarwin {
+        firefox-esr-115 = pkgs.stdenvNoCC.mkDerivation rec {
+          pname = "firefox-esr-115";
+          version = "115.42.0esr";
+          src = pkgs.fetchurl {
+            name = "Firefox-${version}.dmg"; # the %20 in the url would otherwise leak into the store name
+            url = "https://ftp.mozilla.org/pub/firefox/releases/${version}/mac/en-US/Firefox%20${version}.dmg";
+            hash = "sha256-IBPjjiyqGBOEJBWaH4O8GdUYggxgVWFiG78hkNCyQWA=";
+          };
+          nativeBuildInputs = [ pkgs.undmg ];
+          sourceRoot = ".";
+          dontBuild = true;
+          dontFixup = true; # re-signing or patching would break the notarised bundle
+          installPhase = ''
+            mkdir -p $out/Applications
+            cp -R Firefox.app $out/Applications/
+            # The store is read-only, so it cannot update; the policy also stops it trying.
+            mkdir -p $out/Applications/Firefox.app/Contents/Resources/distribution
+            echo '{"policies":{"AppAutoUpdate":false,"ManualAppUpdateOnly":true,"DisableAppUpdate":true}}' \
+              > $out/Applications/Firefox.app/Contents/Resources/distribution/policies.json
+          '';
+        };
       });
 
       lib.devShell = { pkgs, stack ? "static", packages ? [ ] }:
@@ -66,6 +88,8 @@
           shellHook = pkgs.lib.optionalString pkgs.stdenv.isLinux ''
             export PLAYWRIGHT_BROWSERS_PATH=${nixpkgs-browsers.legacyPackages.${system}.playwright-driver.browsers}
             export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+          '' + pkgs.lib.optionalString pkgs.stdenv.isDarwin ''
+            export WDK_FIREFOX_115=${self.packages.${system}.firefox-esr-115}/Applications/Firefox.app/Contents/MacOS/firefox
           '';
         };
 
