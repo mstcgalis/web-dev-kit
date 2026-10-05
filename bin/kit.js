@@ -7,4 +7,9 @@ if (!COMMANDS.includes(cmd)) {
 	process.exit(2);
 }
 const { run } = await import(`../lib/cmd/${cmd}.js`);
-process.exit((await run(args)) ?? 0);
+try {
+	process.exit((await run(args)) ?? 0);
+} catch (e) {
+	console.error(`kit ${cmd}: ${e.message}`);
+	process.exit(2);
+}

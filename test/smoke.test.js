@@ -16,3 +16,10 @@ test('smoke passes once the broken page is skipped', () => {
 	expect(r.out).toContain('3 pages × 1 engine(s), 0 error(s)');
 	expect(r.code).toBe(0);
 }, 60_000);
+
+test('smoke exits 2 on invalid engine', () => {
+	const r = kit(['smoke', '--engines', 'bogus']);
+	expect(r.err).toContain('kit smoke:');
+	expect(r.err).toContain('unknown engine');
+	expect(r.code).toBe(2);
+});
