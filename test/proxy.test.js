@@ -48,6 +48,12 @@ test('rewriteHtml: no <head> means the beacon is prepended', () => {
 	expect(rewriteHtml('<p>x</p>', {}).startsWith(BEACON)).toBe(true);
 });
 
+test('rewriteHtml: uppercase <HEAD> matches and gets beacon', () => {
+	const html = `<HTML><HEAD><title>x</title></HEAD><body>text</body></HTML>`;
+	const out = rewriteHtml(html, {});
+	expect(out.indexOf(BEACON)).toBe(out.indexOf('<HEAD>') + '<HEAD>'.length);
+});
+
 test('blocked: any decoded, case-folded segment; *.php suffix', () => {
 	for (const p of ['/panel', '/PANEL/x', '/%70anel', '/index.php/panel', '/api/x', '/x.php', '/%zz']) expect(blocked(p, ['panel', 'api', '*.php'])).toBe(true);
 	for (const p of ['/', '/panelist', '/about']) expect(blocked(p, ['panel', 'api', '*.php'])).toBe(false);
@@ -128,6 +134,8 @@ test('blocked: parser-differential with repeated decode, segment split, trim', (
 	expect(blocked('/panel%20', rules)).toBe(true);
 	// Double-encoded path segment
 	expect(blocked('/x%2fpanel', rules)).toBe(true); // %2f = /
+	// Fail closed: 6 rounds of encoding (beyond cap of 5) -> blocked
+	expect(blocked('/%252525252570anel', rules)).toBe(true); // Would decode to panel on 6th round
 	// Still allow /panelist
 	expect(blocked('/panelist', rules)).toBe(false);
 });
