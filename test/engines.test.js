@@ -22,3 +22,10 @@ test('guard: a call in flight when the browser dies rejects instead of hanging',
 	await browser.close();
 	expect(await stuck).toBe('browser crashed');
 }, 30_000);
+
+test('guard: a call that never settles on a live browser stalls out', async () => {
+	const browser = await chromium.launch();
+	const stuck = guard(browser, new Promise(() => {}), 100).catch((e) => e.message);
+	expect(await stuck).toContain('browser stalled');
+	await browser.close();
+}, 30_000);
