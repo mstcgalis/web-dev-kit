@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test';
-import { parseEngine } from '../lib/engines.js';
+import { chromium } from 'playwright';
+import { guard, parseEngine } from '../lib/engines.js';
 
 test('parseEngine: playwright names and exe specs', () => {
 	expect(parseEngine('webkit')).toEqual({ kind: 'playwright', name: 'webkit' });
@@ -14,3 +15,10 @@ test('parseEngine expands $VAR paths and names a missing one', () => {
 	delete process.env.WDK_TEST_FF;
 	expect(() => parseEngine('exe:firefox:$WDK_TEST_FF')).toThrow('$WDK_TEST_FF is not set');
 });
+
+test('guard: a call in flight when the browser dies rejects instead of hanging', async () => {
+	const browser = await chromium.launch();
+	const stuck = guard(browser, new Promise(() => {})).catch((e) => e.message);
+	await browser.close();
+	expect(await stuck).toBe('browser crashed');
+}, 30_000);
