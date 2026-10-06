@@ -14,6 +14,8 @@ const upstream = Bun.serve({
 		if (pathname === '/search') return Response.json({ search });
 		if (pathname === '/redirect') return new Response(null, { status: 302, headers: { location: `http://localhost:${upstream.port}/a` } });
 		if (pathname === '/img.png') return new Response(PNG, { headers: { 'content-type': 'image/png' } });
+		if (pathname === '/style.css') return new Response(Bun.gzipSync('a{color:red}'), { headers: { 'content-type': 'text/css', 'content-encoding': 'gzip' } });
+		if (pathname === '/hang') return new Promise(() => {});
 		if (pathname === '/headless') return new Response('<p>no head</p>', { headers: { 'content-type': 'text/html' } });
 		return new Response(`<html><head><title>x</title></head><body><a href="${origin}/a">a</a><script src="/ticker.js?v=1"></script></body></html>`, {
 			headers: { 'content-type': 'text/html' },
@@ -163,4 +165,17 @@ test('proxy: beacon body size limit and type validation', async () => {
 	const bigBody = JSON.stringify({ path: '/x', type: 'error', msg: 'x'.repeat(5000) });
 	expect((await get('/__wdk/beacon', { method: 'POST', body: bigBody })).status).toBe(204);
 	expect(proxy.errors.length).toBe(0);
+});
+
+test('a gzipped non-HTML response reaches the client intact', async () => {
+	const res = await fetch(`${proxy.url}/style.css`, { headers: { 'accept-encoding': 'identity' } });
+	expect(await res.text()).toBe('a{color:red}');
+});
+
+test('an upstream that never answers times out as a 504 and an error', async () => {
+	const slow = startProxy({ origin, upstreamTimeout: 200 });
+	const res = await fetch(`${slow.url}/hang`);
+	expect(res.status).toBe(504);
+	expect(slow.errors.at(-1).msg).toContain('timed out');
+	slow.stop();
 });
