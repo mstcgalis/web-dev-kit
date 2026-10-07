@@ -103,7 +103,16 @@ Also open: idempotency, i.e. re-running it on a half-bootstrapped project.
 
 ## Housekeeping
 
-- Rename this GitHub repo `web-checks` → `web-dev-kit` (the redirect keeps sonda's `#v0.1.0` pin
-  working).
 - Sonda's `docs/perf.md` keeps its findings and the measurement traps; the traps move into the
   wdk's README too, because they apply to every project.
+
+## Known issues (parked at the v0.2.2 review)
+
+- **Multi-engine smoke is flaky**: Firefox/WebKit under Bun+Playwright stall intermittently
+  (2–4 errors per 41-page run, cause unknown). Smoke no longer hangs (60s guard), but projects
+  gate on `--engines chromium`. Try Node instead of Bun for the Playwright side before anything else.
+- Every check that spawns `serve-at` ends with a "recipe terminated by signal 15" line: noise.
+- `serve-dir`: no guard against `%00` or dotfile paths.
+- `freePort()` can race another process for the port between probe and bind.
+- `proxy.responses` grows without bound on long `perf --serve` sessions.
+- Sonda's `docs/perf.md` baseline numbers are stale (−zoom idle now reads ~40%, not ~3%).
