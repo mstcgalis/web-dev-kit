@@ -23,7 +23,7 @@
         # Bump the hash whenever bun.lock changes (build once with lib.fakeHash).
         node-modules = pkgs.stdenvNoCC.mkDerivation {
           pname = "web-dev-kit-node-modules";
-          version = "0.2.0";
+          version = "0.2.6";
           inherit src;
           nativeBuildInputs = [ pkgs.bun ];
           dontConfigure = true;
@@ -31,11 +31,13 @@
             export HOME=$TMPDIR
             bun install --frozen-lockfile --production --ignore-scripts
           '';
-          installPhase = "cp -r node_modules $out";
+          # Nested, not $out itself: a realpath'd import (/nix/store/…/postcss/lib/input.js)
+          # must still find its siblings by walking up to a node_modules dir.
+          installPhase = "mkdir $out && cp -r node_modules $out/";
           dontFixup = true;
           outputHashMode = "recursive";
           outputHashAlgo = "sha256";
-          outputHash = "sha256-1H/Z7HJje3vPxUBj6FZOgCjXQLllhAK3fHKJ+nSxRcM=";
+          outputHash = "sha256-KC0q1o7IB6uufgsbubqWJLScFdHUEenf9Kf/oOCtAWo=";
         };
         wdk = pkgs.stdenvNoCC.mkDerivation {
           pname = "web-dev-kit";
@@ -46,7 +48,7 @@
           installPhase = ''
             mkdir -p $out/share/web-dev-kit $out/bin
             cp -r bin lib package.json $out/share/web-dev-kit/
-            ln -s ${node-modules} $out/share/web-dev-kit/node_modules
+            ln -s ${node-modules}/node_modules $out/share/web-dev-kit/node_modules
             makeWrapper ${pkgs.bun}/bin/bun $out/bin/wdk --add-flags $out/share/web-dev-kit/bin/wdk.js
           '';
         };
