@@ -124,8 +124,6 @@ Also open: idempotency, i.e. re-running it on a half-bootstrapped project.
     Consider a total time budget per engine.
   - macOS (local) was never the problem: the original "flaky under Bun" note was this, not Bun.
     Unverified: trying Node instead of Bun for the Playwright side.
-- Every check that spawns `serve-at` ends with a "recipe terminated by signal 15" line: noise.
-- `serve-dir`: no guard against `%00` or dotfile paths.
-- `freePort()` can race another process for the port between probe and bind.
-- `proxy.responses` grows without bound on long `perf --serve` sessions.
+- `freePort()` can still lose its port between probe and bind. `startSite` now retries on a fresh
+  port when `serve-at` exits, but a thief that answers HTTP on that port goes unnoticed.
 - Sonda's `docs/perf.md` baseline numbers are stale (−zoom idle now reads ~40%, not ~3%).

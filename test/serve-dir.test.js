@@ -24,6 +24,9 @@ test('serve-dir blocks path traversal with %2e%2e', async () => {
 		const res = await fetch(`http://localhost:${actualPort}/%2e%2e/package.json`);
 		expect(res.status).toBe(404);
 		expect(res.headers.get('content-type')).toContain('text/html');
+		expect((await fetch(`http://localhost:${actualPort}/index%00.html`)).status).toBe(400);
+		expect((await fetch(`http://localhost:${actualPort}/.git/config`)).status).toBe(404);
+		expect((await fetch(`http://localhost:${actualPort}/%2egit/config`)).status).toBe(404);
 	} finally {
 		child.kill();
 		await new Promise(resolve => child.once('exit', resolve));
