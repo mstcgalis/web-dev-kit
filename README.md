@@ -3,6 +3,16 @@
 Shared tooling for web projects, delivered as a Nix flake: the `wdk` command (checks) and dev
 shells per stack. Part of a larger system for delivering sites; see [`docs/roadmap.md`](docs/roadmap.md).
 
+## New project
+
+```sh
+nix flake init -t github:mstcgalis/web-dev-kit#static   # or kirby, eleventy
+```
+
+Each template is a flake, a `justfile` (`serve-at`, `build`, `check`), a `wdk.config.js` and a
+starter page. `static` serves `site/`; `eleventy` builds `src/` to `_site/` with Eleventy;
+`kirby` expects Kirby in `./kirby` (git submodule) and serves it with `php -S`.
+
 ## Use in a project
 
 ```nix

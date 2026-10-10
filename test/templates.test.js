@@ -36,3 +36,9 @@ for (const name of ['static', 'eleventy']) {
 		expect(sh(['wdk', 'a11y'], dir).code).toBe(0);
 	}, 180_000);
 }
+
+test('template kirby: has its files and a parseable justfile', async () => {
+	const dir = project('kirby');
+	for (const f of ['flake.nix', 'justfile', 'wdk.config.js', '.gitignore']) expect(await Bun.file(join(dir, f)).exists()).toBe(true);
+	expect(sh(['just', '--list'], dir).code).toBe(0);
+});

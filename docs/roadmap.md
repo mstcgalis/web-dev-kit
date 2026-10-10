@@ -26,10 +26,10 @@ modules that already exist.
 
 Specced: `kirby`, `static`. Missing:
 
-- **Build stacks** (Eleventy, Astro, Vite): `build` produces `dist/`, `serve-at` runs
+- **Build stacks** (Eleventy done in v0.3.0 as a template; Astro, Vite missing): `build` produces `dist/`, `serve-at` runs
   `wdk serve-dir dist`. dgalis.sk (Eleventy) is the first real case.
-- **`nix flake init -t web-dev-kit#<stack>` templates**: flake, justfile, `wdk.config.js`, `.gitignore`,
-  `AGENTS.md`. Owned by the CLI spec, but each stack needs one.
+- **`nix flake init -t web-dev-kit#<stack>` templates**: done for `static`, `kirby`, `eleventy`
+  (no `AGENTS.md` yet, see §0). Kirby's template is not smoke-tested (needs a Kirby checkout).
 - **Each stack declares its deploy kind** (see 3).
 - Open: does a stack adapter also pin its linters (Pint/PHPStan for Kirby, Prettier/ESLint for JS)?
   Probably yes, through the devShell, but this is undecided.

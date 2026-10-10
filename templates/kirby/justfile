@@ -1,0 +1,14 @@
+default:
+    @just --list
+
+# Kirby lives in ./kirby (git submodule add https://github.com/getkirby/kirby kirby).
+serve-at PORT:
+    php -S localhost:{{PORT}} kirby/router.php
+
+# no build step
+build:
+
+check:
+    wdk compat
+    wdk smoke
+    wdk a11y
