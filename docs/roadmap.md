@@ -108,9 +108,22 @@ Also open: idempotency, i.e. re-running it on a half-bootstrapped project.
 
 ## Known issues (parked at the v0.2.2 review)
 
-- **Multi-engine smoke is flaky**: Firefox/WebKit under Bun+Playwright stall intermittently
-  (2–4 errors per 41-page run, cause unknown). Smoke no longer hangs (60s guard), but projects
-  gate on `--engines chromium`. Try Node instead of Bun for the Playwright side before anything else.
+- **Multi-engine smoke on Linux CI** (GitHub ubuntu runner, nix-packaged Playwright browsers;
+  investigated 2026-10-10 on sonda-web PR #6):
+  - Firefox: launch timed out / `newPage: browser has been closed`, `unshare(CLONE_NEWPID): EPERM`
+    in its stderr. Fixed in v0.2.3–v0.2.5: sandbox off on Linux (`MOZ_DISABLE_CONTENT_SANDBOX`,
+    `security.sandbox.content.level=0`), a dead browser is relaunched lazily with 3 launch tries,
+    and a crash, stall or `goto` timeout retries the page once on a fresh browser. Clean since.
+  - WebKit: **unresolved.** `newPage` dies on every page (41/41), no stderr to go on.
+    `WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1` (still set in v0.2.5) and
+    `sysctl kernel.apparmor_restrict_unprivileged_userns=0` on the runner both made no difference,
+    so it is not the bubblewrap sandbox. Next: a throwaway CI step with `DEBUG=pw:browser` on
+    WebKit only; suspect missing system libraries in the nix `playwright-webkit` build.
+    sonda-web's `ci` engines omit `webkit` until this is solved (it still runs in `local`).
+  - Worst case a stalled page now costs 2 × 60s; a fully broken engine makes a run last ~17 min.
+    Consider a total time budget per engine.
+  - macOS (local) was never the problem: the original "flaky under Bun" note was this, not Bun.
+    Unverified: trying Node instead of Bun for the Playwright side.
 - Every check that spawns `serve-at` ends with a "recipe terminated by signal 15" line: noise.
 - `serve-dir`: no guard against `%00` or dotfile paths.
 - `freePort()` can race another process for the port between probe and bind.
