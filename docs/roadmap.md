@@ -121,14 +121,15 @@ Also open: idempotency, i.e. re-running it on a half-bootstrapped project.
     finds no EGL driver off NixOS. The dev shell now sets `__EGL_VENDOR_LIBRARY_DIRS` to Mesa's.
     The sandbox env var and the apparmor sysctl were red herrings; v0.2.9 drops the env var.
   - A fully broken engine cost 2 × 60s per page (~17 min). Since v0.2.10 `smoke` gives up on an
-    engine after 3 pages in a row lose the browser and fails the rest as "not tried".
-    `shots` still aborts on the first crash.
+    engine after 3 pages in a row lose the browser and fails the rest as "not tried"; since v0.2.11
+    `shots` does the same (a note under the cell) instead of aborting. wdk's own CI smokes the
+    fixture in all three engines on Linux.
   - macOS (local) was never the problem: the original "flaky under Bun" note was this, not Bun.
     Unverified: trying Node instead of Bun for the Playwright side.
-- **`freePort()` race.** `startSite` retries on a fresh port when `serve-at` exits, but a thief that
-  answers HTTP on the probed port is taken for the site. Fix needs proof of identity: e.g. pass a
-  nonce to `serve-at` and check a response header, which every stack's recipe would have to honour.
-  A retried attempt's stderr is held back, so a broken `serve-at` prints its error once.
+- **`freePort()` race.** Fixed in v0.2.11 for the real case: a serve-at that loses its port exits
+  on the bind error, so an answer only counts once serve-at has outlived it 300ms. Still fooled by
+  a serve-at that keeps running after a failed bind; a nonce header would close that, at the cost
+  of every stack's recipe honouring it.
 - **`wdk perf` on Firefox/WebKit is too noisy on a machine in use.** Firefox crashes mid-matrix (now
   relaunched, v0.2.8); WebKit's synthetic pointer stops when its window loses the front, so mouse
   readings collapse halfway through. sonda-web runs perf Chrome-only (2026-10-10). Fix would need
