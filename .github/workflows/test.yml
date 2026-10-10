@@ -12,3 +12,5 @@ jobs:
       - run: nix flake check
       - run: nix build .#wdk
       - run: nix develop -c sh -c 'bun install --frozen-lockfile && bun test'
+      # Every engine on a non-NixOS Linux: the Firefox sandbox and WebKit EGL fixes live or die here.
+      - run: nix develop -c sh -c 'cd test/project && bun ../../bin/wdk.js smoke --skip "^/broken" --engines chromium,firefox,webkit'

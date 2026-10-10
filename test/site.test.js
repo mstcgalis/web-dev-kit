@@ -50,3 +50,16 @@ test('startSite fails fast and names the recipe when serve-at dies', async () =>
 		process.chdir(cwd);
 	}
 }, 15_000);
+
+test('startSite does not take a port thief for the site', async () => {
+	const dir = mkdtempSync(join(tmpdir(), 'wdk-thief-'));
+	// The "thief" answers on PORT, then serve-at itself exits as if its bind failed.
+	writeFileSync(join(dir, 'justfile'), "serve-at PORT:\n    bun -e 'Bun.serve({ port: {{PORT}}, fetch: () => new Response(\"thief\") }); setTimeout(() => process.exit(), 5000)' & sleep 0.2; exit 1\n");
+	const cwd = process.cwd();
+	process.chdir(dir);
+	try {
+		await expect(startSite()).rejects.toThrow(/exited/);
+	} finally {
+		process.chdir(cwd);
+	}
+}, 30_000);
