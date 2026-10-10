@@ -41,7 +41,7 @@
         };
         wdk = pkgs.stdenvNoCC.mkDerivation {
           pname = "web-dev-kit";
-          version = "0.2.0";
+          version = (builtins.fromJSON (builtins.readFile ./package.json)).version;
           inherit src;
           nativeBuildInputs = [ pkgs.makeWrapper ];
           dontBuild = true;

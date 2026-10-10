@@ -104,7 +104,9 @@ Also open: idempotency, i.e. re-running it on a half-bootstrapped project.
 ## Housekeeping
 
 - Sonda's `docs/perf.md` keeps its findings and the measurement traps; the traps move into the
-  wdk's README too, because they apply to every project.
+  wdk's README too, because they apply to every project. Not done yet.
+- Releases are tagged from `main` (fast-forwarded from `web-kit`); the nix package version now
+  follows `package.json`.
 
 ## Known issues (parked at the v0.2.2 review)
 
@@ -117,12 +119,18 @@ Also open: idempotency, i.e. re-running it on a half-bootstrapped project.
   - WebKit: fixed in v0.2.6. `newPage` died on every page with `Could not create EGL display:
     no supported platform available` (seen only under `DEBUG=pw:browser`): nix's WPE WebKit
     finds no EGL driver off NixOS. The dev shell now sets `__EGL_VENDOR_LIBRARY_DIRS` to Mesa's.
-    The sandbox env var and the apparmor sysctl were red herrings.
-  - Worst case a stalled page now costs 2 × 60s; a fully broken engine makes a run last ~17 min.
-    Consider a total time budget per engine.
+    The sandbox env var and the apparmor sysctl were red herrings; v0.2.9 drops the env var.
+  - **Time budget per engine.** Worst case a stalled page costs 2 × 60s, so a fully broken engine
+    makes a run last ~17 min before it fails. Fix: one deadline per engine in `smoke` (and `shots`);
+    on expiry, fail the remaining pages as "engine over budget" and move on. Needs a sane default
+    (pages × ~10s?) and a config override.
   - macOS (local) was never the problem: the original "flaky under Bun" note was this, not Bun.
     Unverified: trying Node instead of Bun for the Playwright side.
-- `freePort()` can still lose its port between probe and bind. `startSite` now retries on a fresh
-  port when `serve-at` exits, but a thief that answers HTTP on that port goes unnoticed.
-- `wdk perf` on Firefox/WebKit is too noisy on a machine in use (Firefox crashes mid-matrix, WebKit's
-  pointer stops when its window loses the front). sonda-web now runs it Chrome-only (2026-10-10).
+- **`freePort()` race.** `startSite` retries on a fresh port when `serve-at` exits, but a thief that
+  answers HTTP on the probed port is taken for the site. Fix needs proof of identity: e.g. pass a
+  nonce to `serve-at` and check a response header, which every stack's recipe would have to honour.
+  Side effect of the retry: a genuinely broken `serve-at` prints its error three times.
+- **`wdk perf` on Firefox/WebKit is too noisy on a machine in use.** Firefox crashes mid-matrix (now
+  relaunched, v0.2.8); WebKit's synthetic pointer stops when its window loses the front, so mouse
+  readings collapse halfway through. sonda-web runs perf Chrome-only (2026-10-10). Fix would need
+  an unattended machine or a headless measurement that does not depend on window focus.
