@@ -88,6 +88,9 @@
           shellHook = pkgs.lib.optionalString pkgs.stdenv.isLinux ''
             export PLAYWRIGHT_BROWSERS_PATH=${nixpkgs-browsers.legacyPackages.${system}.playwright-driver.browsers}
             export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+            # Nix's WebKit (WPE) finds no EGL driver off NixOS (no /run/opengl-driver) and
+            # aborts every newPage: "Could not create EGL display". Point it at Mesa's.
+            export __EGL_VENDOR_LIBRARY_DIRS=${nixpkgs-browsers.legacyPackages.${system}.mesa}/share/glvnd/egl_vendor.d
           '' + pkgs.lib.optionalString pkgs.stdenv.isDarwin ''
             export WDK_FIREFOX_115=${self.packages.${system}.firefox-esr-115}/Applications/Firefox.app/Contents/MacOS/firefox
           '';

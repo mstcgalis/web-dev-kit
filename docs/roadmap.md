@@ -114,12 +114,10 @@ Also open: idempotency, i.e. re-running it on a half-bootstrapped project.
     in its stderr. Fixed in v0.2.3–v0.2.5: sandbox off on Linux (`MOZ_DISABLE_CONTENT_SANDBOX`,
     `security.sandbox.content.level=0`), a dead browser is relaunched lazily with 3 launch tries,
     and a crash, stall or `goto` timeout retries the page once on a fresh browser. Clean since.
-  - WebKit: **unresolved.** `newPage` dies on every page (41/41), no stderr to go on.
-    `WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1` (still set in v0.2.5) and
-    `sysctl kernel.apparmor_restrict_unprivileged_userns=0` on the runner both made no difference,
-    so it is not the bubblewrap sandbox. Next: a throwaway CI step with `DEBUG=pw:browser` on
-    WebKit only; suspect missing system libraries in the nix `playwright-webkit` build.
-    sonda-web's `ci` engines omit `webkit` until this is solved (it still runs in `local`).
+  - WebKit: fixed in v0.2.6. `newPage` died on every page with `Could not create EGL display:
+    no supported platform available` (seen only under `DEBUG=pw:browser`): nix's WPE WebKit
+    finds no EGL driver off NixOS. The dev shell now sets `__EGL_VENDOR_LIBRARY_DIRS` to Mesa's.
+    The sandbox env var and the apparmor sysctl were red herrings.
   - Worst case a stalled page now costs 2 × 60s; a fully broken engine makes a run last ~17 min.
     Consider a total time budget per engine.
   - macOS (local) was never the problem: the original "flaky under Bun" note was this, not Bun.
