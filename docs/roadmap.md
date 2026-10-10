@@ -12,7 +12,7 @@ modules that already exist.
 
 ## 0. Repo contract: what the thin version leaves out
 
-- **Shared agent/human rules.** Sonda's `AGENTS.md` mixes generic rules (one concern per commit,
+- **Shared agent/human rules** (generic part done: `AGENTS.md` in each template; Kirby-specific part remains; a test keeps the copies identical). Sonda's `AGENTS.md` mixes generic rules (one concern per commit,
   `just check` before commit, never commit secrets, server-owned state is untouchable, field names
   frozen) with Kirby specifics. Split it: the generic part ships in the wdk and projects point at
   it; the stack part goes with the stack adapter.
@@ -29,7 +29,7 @@ Specced: `kirby`, `static`. Missing:
 - **Build stacks** (Eleventy done as a template; Astro, Vite missing): `build` produces `dist/`, `serve-at` runs
   `wdk serve-dir dist`. dgalis.sk (Eleventy) is the first real case.
 - **`nix flake init -t web-dev-kit#<stack>` templates**: done for `static`, `kirby`, `eleventy`
-  (no `AGENTS.md` yet, see §0). Kirby's template is not smoke-tested (needs a Kirby checkout).
+  (each ships a generic `AGENTS.md`). Kirby's template is not smoke-tested (needs a Kirby checkout).
 - **Each stack declares its deploy kind** (see 3).
 - Open: does a stack adapter also pin its linters (Pint/PHPStan for Kirby, Prettier/ESLint for JS)?
   Probably yes, through the devShell, but this is undecided.
