@@ -26,7 +26,7 @@ modules that already exist.
 
 Specced: `kirby`, `static`. Missing:
 
-- **Build stacks** (Eleventy done in v0.3.0 as a template; Astro, Vite missing): `build` produces `dist/`, `serve-at` runs
+- **Build stacks** (Eleventy done as a template; Astro, Vite missing): `build` produces `dist/`, `serve-at` runs
   `wdk serve-dir dist`. dgalis.sk (Eleventy) is the first real case.
 - **`nix flake init -t web-dev-kit#<stack>` templates**: done for `static`, `kirby`, `eleventy`
   (no `AGENTS.md` yet, see §0). Kirby's template is not smoke-tested (needs a Kirby checkout).
