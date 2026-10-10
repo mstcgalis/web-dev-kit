@@ -82,6 +82,8 @@
           system = pkgs.stdenv.hostPlatform.system;
           stacks = {
             static = [ ];
+            # Eleventy comes from the project's bun dependencies.
+            eleventy = [ ];
             # Same attribute as the vps PHP-FPM pool (services.phpfpm.pools.*.phpPackage).
             kirby = [ pkgs.php85 pkgs.php85Packages.composer ];
           };
@@ -97,6 +99,11 @@
             export WDK_FIREFOX_115=${self.packages.${system}.firefox-esr-115}/Applications/Firefox.app/Contents/MacOS/firefox
           '';
         };
+
+      templates = nixpkgs.lib.genAttrs [ "static" "kirby" "eleventy" ] (name: {
+        path = ./templates/${name};
+        description = "web-dev-kit ${name} project";
+      });
 
       devShells = forAll (pkgs: { default = self.lib.devShell { inherit pkgs; }; });
     };

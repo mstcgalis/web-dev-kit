@@ -1,0 +1,14 @@
+default:
+    @just --list
+
+# required by wdk: a foreground server on PORT
+serve-at PORT:
+    wdk serve-dir site {{PORT}}
+
+# no build step
+build:
+
+check:
+    wdk compat
+    wdk smoke
+    wdk a11y

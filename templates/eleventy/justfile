@@ -1,0 +1,14 @@
+default:
+    @just --list
+
+serve-at PORT:
+    wdk serve-dir _site {{PORT}}
+
+build:
+    rm -rf _site
+    bunx @11ty/eleventy
+
+check: build
+    wdk compat
+    wdk smoke
+    wdk a11y
