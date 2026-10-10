@@ -124,4 +124,5 @@ Also open: idempotency, i.e. re-running it on a half-bootstrapped project.
     Unverified: trying Node instead of Bun for the Playwright side.
 - `freePort()` can still lose its port between probe and bind. `startSite` now retries on a fresh
   port when `serve-at` exits, but a thief that answers HTTP on that port goes unnoticed.
-- Sonda's `docs/perf.md` baseline numbers are stale (−zoom idle now reads ~40%, not ~3%).
+- `wdk perf` on Firefox/WebKit is too noisy on a machine in use (Firefox crashes mid-matrix, WebKit's
+  pointer stops when its window loses the front). sonda-web now runs it Chrome-only (2026-10-10).
