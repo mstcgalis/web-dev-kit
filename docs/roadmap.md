@@ -63,8 +63,8 @@ Missing:
 
 Missing (this spec only moves sonda's test job to `nix develop -c just check`):
 
-- **Reusable workflows in the wdk** (`.github/workflows/*.yml` with `workflow_call`): test,
-  deploy-staging (push to `dev`), deploy-production (push to `main`, after tests pass). Projects
+- **Reusable workflows in the wdk**: `check.yml` (`workflow_call`, `nix develop -c just check`, with Nix
+  cache) done and shipped as a caller in each template. Missing: deploy-staging (push to `dev`), deploy-production (push to `main`, after tests pass). Projects
   keep three thin caller files.
 - **Nix caching in CI** (magic-nix-cache or a Cachix cache) so a cold Nix shell does not dominate
   CI time.

@@ -1,0 +1,20 @@
+# Reusable: a project calls this with `uses: mstcgalis/web-dev-kit/.github/workflows/check.yml@vX.Y.Z`
+name: check
+on:
+  workflow_call:
+    inputs:
+      submodules:
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: ${{ inputs.submodules }}
+      - uses: DeterminateSystems/determinate-nix-action@v3
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
+      - run: nix develop -c just check
