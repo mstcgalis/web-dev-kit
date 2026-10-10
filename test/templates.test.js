@@ -42,3 +42,9 @@ test('template kirby: has its files and a parseable justfile', async () => {
 	for (const f of ['flake.nix', 'justfile', 'wdk.config.js', '.gitignore', 'assets/css/style.css']) expect(await Bun.file(join(dir, f)).exists()).toBe(true);
 	expect(sh(['just', '--list'], dir).code).toBe(0);
 });
+
+// templates are copied standalone by `nix flake init`, so the shared rules are duplicated; keep them in sync
+test('AGENTS.md is identical across templates', async () => {
+	const [a, ...rest] = await Promise.all(['static', 'eleventy', 'kirby'].map((t) => Bun.file(join(ROOT, 'templates', t, 'AGENTS.md')).text()));
+	for (const r of rest) expect(r).toBe(a);
+});
