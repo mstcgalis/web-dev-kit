@@ -60,6 +60,15 @@ errors. The proxy also takes `?wdk-off=a,b|static`, `?wdk-mouse` and `?wdk-freez
 0 pass, 1 findings, 2 broken setup (the message says the fix). `doctor` exits 1 if anything is missing;
 `compat` exits 2 if its globs match nothing; `shots`, `perf` and `load` exit 0.
 
+## Stop hook (agents)
+
+A passing `wdk check` records the working tree's git hash in `.wdk/checked`. `wdk verified` exits 0 if the
+tree is unchanged since then (or, never checked, still the committed state), else 1. Templates ship
+`.claude/settings.json` with a Claude Code Stop hook, `just stop-hook` (`wdk verified --hook`): an agent that
+changed files without a passing check is sent back once with the reason; the second stop goes through, so a
+check it can't fix gets reported instead of looping. Existing projects: copy `.claude/settings.json` and the
+`stop-hook` recipe from a template.
+
 ## Deploys
 
 A site is a directory on the vps; a release is one commit, flipped in atomically.

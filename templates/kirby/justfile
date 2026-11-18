@@ -22,3 +22,8 @@ build:
 # compat + smoke + a11y on one server
 check:
     {{wdk}} check
+
+# Claude Code Stop hook (.claude/settings.json): an unchecked change sends the agent back once
+[no-exit-message]
+stop-hook:
+    @{{wdk}} verified --hook
