@@ -1,5 +1,7 @@
 import { afterAll, expect, test } from 'bun:test';
 import { existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { chromium } from 'playwright';
 import { wdk, PROJECT, slow } from './run.js';
@@ -22,4 +24,12 @@ slow('shots writes a sheet: pages × (engine × viewport), exe engines included'
 	expect(pngs).toHaveLength(16);
 	expect(html).toMatch(/boom/); // the beacon / pageerror note under /broken
 	expect(existsSync(join(PROJECT, '.wdk', 'shots'))).toBe(true);
+}, 300_000);
+
+slow('shots skips an engine that is not installed and still sheets the rest', async () => {
+	const none = mkdtempSync(join(tmpdir(), 'wdk-nobrowsers-'));
+	const r = await wdk(['shots', '--engines', 'firefox,exe:chrome:$WDK_TEST_CHROME'], { WDK_TEST_CHROME: SHELL, PLAYWRIGHT_BROWSERS_PATH: none });
+	expect(r.err).toMatch(/wdk shots: skipped firefox is not installed — /);
+	expect(r.code).toBe(0);
+	expect(readFileSync(r.out.match(/sheet: (.+)/)[1].trim(), 'utf8').match(/<th data-col=/g)).toHaveLength(2);
 }, 300_000);

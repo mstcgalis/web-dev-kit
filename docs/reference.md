@@ -58,7 +58,7 @@ errors. The proxy also takes `?wdk-off=a,b|static`, `?wdk-mouse` and `?wdk-freez
 ## Exit codes
 
 0 pass, 1 findings, 2 broken setup (the message says the fix). `doctor` exits 1 if anything is missing;
-`compat` exits 2 if its globs match nothing; `shots`, `perf` and `load` exit 0.
+`compat` exits 2 if its globs match nothing; `shots`, `perf` and `load` exit 0. `shots` skips an engine that is not installed (one line on stderr) and sheets the rest.
 
 ## Stop hook (agents)
 
